@@ -1,3 +1,5 @@
+const chalk = require('chalk'); // ✅ Librería para colorear texto en consola
+
 const productos = [
     { id: 1, nombre: "pan", precio: 2.00, categoria: "panaderia", stock: 20 },
     { id: 2, nombre: "leche", precio: 3.50, categoria: "lacteos", stock: 15 },
@@ -6,11 +8,11 @@ const productos = [
 ];
 
 function mostrarlista() {
-    console.log("---------------------------------------------");
-    console.log("ID | NOMBRE     | PRECIO  | CATEGORÍA   | STOCK");
-    console.log("---------------------------------------------");
+    console.log(chalk.bold("---------------------------------------------"));
+    console.log(chalk.bold("ID | NOMBRE     | PRECIO  | CATEGORÍA   | STOCK"));
+    console.log(chalk.bold("---------------------------------------------"));
     productos.forEach(p => {
-        console.log(`${p.id.toString().padEnd(2)} | ${p.nombre.padEnd(10)} | S/${p.precio.toFixed(2).padEnd(6)} | ${p.categoria.padEnd(10)} | ${p.stock}`);
+        console.log(`${p.id.toString().padEnd(2)} | ${chalk.cyan(p.nombre.padEnd(10))} | S/${chalk.yellow(p.precio.toFixed(2).padEnd(6))} | ${chalk.green(p.categoria.padEnd(10))} | ${chalk.magenta(p.stock)}`);
     });
 }
 
@@ -19,11 +21,11 @@ function buscarProducto(nombre) {
 }
 
 function lista(){
-    console.log("\n PRODUCTOS DISPONIBLES:");
-    console.log("---------------------------------------------");
-    console.log("ID| NOMBRE   | PRECIO");
+    console.log(chalk.bold("\nPRODUCTOS DISPONIBLES:"));
+    console.log(chalk.bold("---------------------------------------------"));
+    console.log(chalk.bold("ID | NOMBRE   | PRECIO"));
     productos.forEach(p => {
-        console.log(`${p.id} | ${p.nombre} -> S/${p.precio.toFixed(2)}`);
+        console.log(`${p.id} | ${chalk.cyan(p.nombre)} -> S/${chalk.yellow(p.precio.toFixed(2))}`);
     });
 }
 
@@ -32,29 +34,29 @@ function mostrarBusqueda(termino) {
 
     const producto = productos.find(p => p.nombre.toLowerCase() === texto);
     if (producto) {
-        console.log("\n PRODUCTO ENCONTRADO:");
+        console.log(chalk.bold("\nPRODUCTO ENCONTRADO:"));
         console.log("---------------------------------------------");
-        console.log(`ID: ${producto.id}`);
-        console.log(`Nombre: ${producto.nombre}`);
-        console.log(`Precio: S/${producto.precio.toFixed(2)}`);
-        console.log(`Categoría: ${producto.categoria}`);
-        console.log(`Stock disponible: ${producto.stock > 0 ? producto.stock : "SIN STOCK"}`);
+        console.log(`ID: ${chalk.cyan(producto.id)}`);
+        console.log(`Nombre: ${chalk.cyan(producto.nombre)}`);
+        console.log(`Precio: ${chalk.yellow(`S/${producto.precio.toFixed(2)}`)}`);
+        console.log(`Categoría: ${chalk.green(producto.categoria)}`);
+        console.log(`Stock disponible: ${producto.stock > 0 ? chalk.magenta(producto.stock) : chalk.red("SIN STOCK")}`);
         console.log("---------------------------------------------");
         return producto;
     }
 
     const productosCategoria = productos.filter(p => p.categoria.toLowerCase() === texto);
     if (productosCategoria.length > 0) {
-        console.log(`\nPRODUCTOS EN LA CATEGORÍA "${termino.toUpperCase()}":`);
+        console.log(chalk.bold(`\nPRODUCTOS EN LA CATEGORÍA "${termino.toUpperCase()}":`));
         console.log("---------------------------------------------");
         productosCategoria.forEach(p => {
-            console.log(`ID: ${p.id} | ${p.nombre} - S/${p.precio.toFixed(2)} | Stock: ${p.stock}`);
+            console.log(`ID: ${chalk.cyan(p.id)} | ${p.nombre} - ${chalk.yellow(`S/${p.precio.toFixed(2)}`)} | Stock: ${chalk.magenta(p.stock)}`);
         });
         console.log("---------------------------------------------");
         return productosCategoria;
     }
 
-    console.log(`No se encontró ningún producto o categoría llamada "${termino}".`);
+    console.log(chalk.red(`No se encontró ningún producto o categoría llamada "${termino}".`));
     return null;
 }
 
@@ -67,7 +69,6 @@ function actualizarStock(nombre) {
         return false;
     }
 }
-
 
 module.exports = { 
     productos,
