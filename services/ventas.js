@@ -1,4 +1,4 @@
-const chalk = require('chalk'); // ✅ Librería para colorear texto en consola
+const chalk = require('chalk');
 
 let carrito = [];
 let readline;
