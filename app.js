@@ -21,7 +21,7 @@ function mostrarMenu() {
         switch (opcion.trim()) {
             case '1':
                 console.log("\n****** REGISTRAR NUEVA VENTA *******");
-                producto.mostrarlista();
+                producto.lista();
                 venta.agregarVenta();
                 break;
 
@@ -53,6 +53,12 @@ function mostrarMenu() {
             case '6':
                 console.log("\n******* GENERAR TICKET DE VENTA *******");
                 venta.mostrarResumen();
+                mostrarMenu();
+                break;
+            
+            case '7':
+                console.log("\n******* REPORTES DE VENTAS *******");
+                venta.generarReporte();
                 mostrarMenu();
                 break;
 

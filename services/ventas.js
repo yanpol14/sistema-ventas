@@ -2,11 +2,14 @@ let carrito = [];
 let readline;
 let buscarProducto;
 let callbackMenu;
+let historialVentas = []; 
+let actualizarStock;
 
-function inicializar(rl, buscar, volverMenu) {
+function inicializar(rl, buscar, volverMenu, actualizar) {
     readline = rl;
     buscarProducto = buscar;
     callbackMenu = volverMenu;
+    actualizarStock = actualizar;
 }
 
 function agregarCarrito(nombre) {
@@ -34,8 +37,19 @@ function agregarCarrito(nombre) {
 
 function agregarVenta() {
     readline.question("Ingrese el nombre del producto (o 'salir' para regresar al menú): ", (nombre) => {
-        if (nombre.toLowerCase() === "salir") {
+        if (nombre.toLowerCase() === "salir" || nombre.toLowerCase() === "s") {
             console.log("\nRegresando al menú principal...\n");
+            if (carrito.length > 0) {
+                const { subtotal, descuento, igv, total } = calcularTotal(false);
+                historialVentas.push({
+                    fecha: new Date().toLocaleString(),
+                    productos: [...carrito],
+                    subtotal,
+                    descuento,
+                    igv,
+                    total
+                });
+            }
             callbackMenu();
             return;
         }
@@ -44,28 +58,34 @@ function agregarVenta() {
     });
 }
 
-function mostrarResumen() {
-    console.log("\nRESUMEN DE COMPRA:");
-    carrito.forEach((p, i) => {
-        console.log(`${i + 1}. ${p.nombre} x${p.cantidad} = S/${p.total.toFixed(2)}`);
-    });
-
-    const { subtotal, descuento, total } = calcularTotal();
-    console.log(`\nSubtotal: S/${subtotal.toFixed(2)}`);
-    console.log(`Descuento: S/${descuento.toFixed(2)}`);
-    console.log(`Total a pagar: S/${total.toFixed(2)}\n`);
-}
-
-function calcularTotal() {
+function calcularTotal(mostrarDetalle = true) {
     const subtotal = carrito.reduce((sum, p) => sum + p.total, 0);
     let descuento = 0;
-    if (subtotal > 50) {
+
+    // 🔹 Descuento escalonado
+    if (subtotal >= 100) {
+        descuento = subtotal * 0.15;
+    } else if (subtotal >= 50 && subtotal < 100) {
         descuento = subtotal * 0.10;
-    } else if (subtotal >= 20 && subtotal <= 50) {
+    } else if (subtotal >= 20 && subtotal < 50) {
         descuento = subtotal * 0.05;
-    }  
-    const total = subtotal - descuento;
-    return { subtotal, descuento, total };
+    }
+
+    const subtotalConDescuento = subtotal - descuento;
+    const igv = subtotalConDescuento * 0.18;
+    const total = subtotalConDescuento + igv;
+
+    if (mostrarDetalle) {
+        console.log("\n------ CÁLCULO DETALLADO ------");
+        console.log(`Subtotal: S/${subtotal.toFixed(2)}`);
+        console.log(`Descuento aplicado: S/${descuento.toFixed(2)}`);
+        console.log(`Subtotal con descuento: S/${subtotalConDescuento.toFixed(2)}`);
+        console.log(`IGV (18%): S/${igv.toFixed(2)}`);
+        console.log(`Total final: S/${total.toFixed(2)}`);
+        console.log("-------------------------------\n");
+    }
+
+    return { subtotal, descuento, igv, total };
 }
 
 function verCarrito() {
@@ -75,23 +95,58 @@ function verCarrito() {
     }
 
     console.log("\n CARRITO ACTUAL DE COMPRAS:");
-    console.log("---------------------------------------");
-    console.log("Producto       | Cant | Precio | Total");
-    console.log("---------------------------------------");
+    console.log("--------------------------------------------------");
+    console.log("Producto       | Cant | Precio(U) | Subtotal");
+    console.log("--------------------------------------------------");
 
     carrito.forEach(item => {
-        console.log(`${item.nombre.padEnd(14)} | ${item.cantidad.toString().padEnd(5)} | S/${item.precioUnitario.toFixed(2).padEnd(6)} | S/${item.total.toFixed(2)}`);
+        const subtotalItem = item.cantidad * item.precioUnitario;
+        console.log(
+            `${item.nombre.padEnd(14)} | ${item.cantidad.toString().padEnd(4)} | S/${item.precioUnitario
+                .toFixed(2)
+                .padEnd(7)} | S/${subtotalItem.toFixed(2)}`
+        );
     });
 
-    const totalCarrito = carrito.reduce((sum, item) => sum + item.total, 0);
-    console.log("---------------------------------------");
-    console.log(`Total general: S/${totalCarrito.toFixed(2)}\n`);
+    console.log("--------------------------------------------------");
+    calcularTotal(true);
+}
+
+function reporteVentas() {
+    if (historialVentas.length === 0) {
+        console.log("\nNo hay ventas registradas aún.\n");
+        return;
+    }
+
+    console.log("\n========== REPORTE DE VENTAS ==========");
+    let totalGeneral = 0;
+    let totalIGV = 0;
+
+    historialVentas.forEach((venta, index) => {
+        console.log(`\nVenta #${index + 1} - Fecha: ${venta.fecha}`);
+        console.log("---------------------------------------");
+        venta.productos.forEach(p => {
+            console.log(`${p.nombre.padEnd(14)} | Cant: ${p.cantidad} | Total: S/${p.total.toFixed(2)}`);
+        });
+        console.log("---------------------------------------");
+        console.log(`Subtotal: S/${venta.subtotal.toFixed(2)}`);
+        console.log(`Descuento: S/${venta.descuento.toFixed(2)}`);
+        console.log(`IGV (18%): S/${venta.igv.toFixed(2)}`);
+        console.log(`Total: S/${venta.total.toFixed(2)}`);
+        totalGeneral += venta.total;
+        totalIGV += venta.igv;
+    });
+
+    console.log("\n=======================================");
+    console.log(`TOTAL GENERAL IGV COBRADO: S/${totalIGV.toFixed(2)}`);
+    console.log(`TOTAL GENERAL VENDIDO: S/${totalGeneral.toFixed(2)}\n`);
 }
 
 module.exports = { 
     inicializar,
-    mostrarResumen,
-    calcularTotal,
+    agregarCarrito,
     agregarVenta,
-    verCarrito
+    verCarrito,
+    calcularTotal,
+    reporteVentas
 };

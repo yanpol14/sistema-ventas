@@ -18,6 +18,15 @@ function buscarProducto(nombre) {
     return productos.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
 }
 
+function lista(){
+    console.log("\n PRODUCTOS DISPONIBLES:");
+    console.log("---------------------------------------------");
+    console.log("ID| NOMBRE   | PRECIO");
+    productos.forEach(p => {
+        console.log(`${p.id} | ${p.nombre} -> S/${p.precio.toFixed(2)}`);
+    });
+}
+
 function mostrarBusqueda(termino) {
     const texto = termino.toLowerCase();
 
@@ -49,9 +58,22 @@ function mostrarBusqueda(termino) {
     return null;
 }
 
+function actualizarStock(nombre) {
+    const producto = productos.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+    if (producto && producto.stock > 0) {
+        producto.stock -= 1;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 module.exports = { 
     productos,
     mostrarlista,
     buscarProducto,
-    mostrarBusqueda
+    lista,
+    mostrarBusqueda,
+    actualizarStock
 };
